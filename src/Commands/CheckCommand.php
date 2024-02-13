@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Sleep;
+use Illuminate\Support\Str;
 use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
@@ -48,6 +49,8 @@ class CheckCommand extends Command
             ? $store->lock('laravel:pulse:check', 5)
             : null;
 
+        $key = Str::random();
+
         while (true) {
             $now = CarbonImmutable::now();
 
@@ -59,7 +62,7 @@ class CheckCommand extends Command
                 $event->dispatch(new IsolatedBeat($now));
             }
 
-            $event->dispatch(new SharedBeat($now));
+            $event->dispatch(new SharedBeat($now, $key));
 
             $pulse->ingest();
 
