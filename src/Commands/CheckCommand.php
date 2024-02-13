@@ -44,36 +44,26 @@ class CheckCommand extends Command
     ): int {
         $lastRestart = $cache->store()->get('laravel:pulse:restart');
 
-        $interval = CarbonInterval::seconds(5);
-
-        $lastSnapshotAt = CarbonImmutable::now()->floorSeconds((int) $interval->totalSeconds);
-
         $lock = ($store = $cache->store()->getStore()) instanceof LockProvider
-            ? $store->lock('laravel:pulse:check', (int) $interval->totalSeconds)
+            ? $store->lock('laravel:pulse:check', 5)
             : null;
 
         while (true) {
             $now = CarbonImmutable::now();
 
-            if ($now->subSeconds((int) $interval->totalSeconds)->lessThan($lastSnapshotAt)) {
-                Sleep::for(500)->milliseconds();
-
-                continue;
-            }
-
             if ($lastRestart !== $cache->store()->get('laravel:pulse:restart')) {
                 return self::SUCCESS;
             }
 
-            $lastSnapshotAt = $now->floorSeconds((int) $interval->totalSeconds);
-
             if ($lock?->get()) {
-                $event->dispatch(new IsolatedBeat($lastSnapshotAt, $interval));
+                $event->dispatch(new IsolatedBeat($now));
             }
 
-            $event->dispatch(new SharedBeat($lastSnapshotAt, $interval));
+            $event->dispatch(new SharedBeat($now));
 
             $pulse->ingest();
+
+            Sleep::for(1)->second();
         }
     }
 }

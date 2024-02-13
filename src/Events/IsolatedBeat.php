@@ -12,7 +12,6 @@ class IsolatedBeat
      */
     public function __construct(
         public CarbonImmutable $time,
-        public CarbonInterval $interval,
     ) {
         //
     }

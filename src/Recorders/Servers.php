@@ -6,6 +6,7 @@ use Illuminate\Config\Repository;
 use Illuminate\Support\Str;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
+use Laravel\Pulse\Support\CacheStoreResolver;
 use RuntimeException;
 
 /**
@@ -25,6 +26,7 @@ class Servers
      */
     public function __construct(
         protected Pulse $pulse,
+        protected CacheStoreResolver $cache,
         protected Repository $config
     ) {
         //
@@ -35,7 +37,7 @@ class Servers
      */
     public function record(SharedBeat $event): void
     {
-        if ($event->time->second % 15 !== 0) {
+        if (! $this->readyToRecord($event)) {
             return;
         }
 
@@ -81,5 +83,27 @@ class Servers
                 ])
                 ->all(),
         ], flags: JSON_THROW_ON_ERROR), $event->time);
+
+        $this->cache->store()->forever($this->key(), $event->time->timestamp);
+    }
+
+    /**
+     * Determine if the recorder is ready to take another snapshot.
+     */
+    protected function readyToRecord(SharedBeat $event): bool
+    {
+        return with($this->cache->store()->get($this->key()), function ($lastChecked) use ($event) {
+            return $lastChecked === null || $lastChecked <= ($event->time->timestamp - 15);
+        });
+    }
+
+    /**
+     * The last checked at cache key.
+     */
+    protected function key(): string
+    {
+        $slug = Str::slug($this->config->get('pulse.recorders.'.self::class.'.server_name'));
+
+        return "laravel:pulse:recorders:servers:{$slug}:last_snapshot_at";
     }
 }
