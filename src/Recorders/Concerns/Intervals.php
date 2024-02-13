@@ -3,13 +3,9 @@
 namespace Laravel\Pulse\Recorders\Concerns;
 
 use DateInterval;
-use DateTimeInterface;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
-use Laravel\Pulse\Support\CacheStoreResolver;
 
 trait Intervals
 {

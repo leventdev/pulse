@@ -3,13 +3,9 @@
 namespace Laravel\Pulse\Recorders;
 
 use Carbon\CarbonInterval as Interval;
-use DateInterval;
-use DateTimeInterface;
 use Illuminate\Config\Repository;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
-use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
 use Laravel\Pulse\Support\CacheStoreResolver;
@@ -20,7 +16,7 @@ use RuntimeException;
  */
 class Servers
 {
-    use InteractsWithTime, Concerns\Intervals;
+    use Concerns\Intervals, InteractsWithTime;
 
     /**
      * The events to listen for.
@@ -55,7 +51,7 @@ class Servers
                 'Linux' => intval(`cat /proc/meminfo | grep MemTotal | grep -E -o '[0-9]+'` / 1024),
                 'Windows' => intval(((int) trim(`wmic ComputerSystem get TotalPhysicalMemory | more +1`)) / 1024 / 1024),
                 'BSD' => intval(`sysctl hw.physmem | grep -Eo '[0-9]+'` / 1024 / 1024),
-default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
+                default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
             };
 
             $memoryUsed = match (PHP_OS_FAMILY) {
@@ -63,7 +59,7 @@ default => throw new RuntimeException('The pulse:check command does not currentl
                 'Linux' => $memoryTotal - intval(`cat /proc/meminfo | grep MemAvailable | grep -E -o '[0-9]+'` / 1024), // MB
                 'Windows' => $memoryTotal - intval(((int) trim(`wmic OS get FreePhysicalMemory | more +1`)) / 1024), // MB
                 'BSD' => intval(intval(`( sysctl vm.stats.vm.v_cache_count | grep -Eo '[0-9]+' ; sysctl vm.stats.vm.v_inactive_count | grep -Eo '[0-9]+' ; sysctl vm.stats.vm.v_active_count | grep -Eo '[0-9]+' ) | awk '{s+=$1} END {print s}'`) * intval(`pagesize`) / 1024 / 1024), // MB
-default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
+                default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
             };
 
             $cpu = match (PHP_OS_FAMILY) {
@@ -71,7 +67,7 @@ default => throw new RuntimeException('The pulse:check command does not currentl
                 'Linux' => (int) `top -bn1 | grep -E '^(%Cpu|CPU)' | awk '{ print $2 + $4 }'`,
                 'Windows' => (int) trim(`wmic cpu get loadpercentage | more +1`),
                 'BSD' => (int) `top -b -d 2| grep 'CPU: ' | tail -1 | awk '{print$10}' | grep -Eo '[0-9]+\.[0-9]+' | awk '{ print 100 - $1 }'`,
-default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
+                default => throw new RuntimeException('The pulse:check command does not currently support '.PHP_OS_FAMILY),
             };
 
             $this->pulse->record('cpu', $slug, $cpu, $event->time)->avg()->onlyBuckets();
@@ -87,7 +83,7 @@ default => throw new RuntimeException('The pulse:check command does not currentl
                         'total' => $total = intval(round(disk_total_space($directory) / 1024 / 1024)), // MB
                         'used' => intval(round($total - (disk_free_space($directory) / 1024 / 1024))), // MB
                     ])
-                        ->all(),
+                    ->all(),
             ], flags: JSON_THROW_ON_ERROR), $event->time);
         });
     }

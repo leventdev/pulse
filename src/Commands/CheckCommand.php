@@ -3,7 +3,6 @@
 namespace Laravel\Pulse\Commands;
 
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterval;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Events\Dispatcher;
