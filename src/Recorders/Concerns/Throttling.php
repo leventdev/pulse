@@ -5,7 +5,6 @@ namespace Laravel\Pulse\Recorders\Concerns;
 use Carbon\CarbonImmutable;
 use DateInterval;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Support\CacheStoreResolver;

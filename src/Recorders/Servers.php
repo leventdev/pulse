@@ -8,7 +8,6 @@ use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
-use Laravel\Pulse\Recorders\Concerns\Throttling;
 use Laravel\Pulse\Support\CacheStoreResolver;
 use RuntimeException;
 
