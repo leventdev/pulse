@@ -16,6 +16,8 @@ trait Throttling
      */
     protected function throttle(DateInterval|int $interval, SharedBeat|IsolatedBeat $event, callable $callback, ?string $key = null): void
     {
+        $key ??= static::class;
+
         if ($event instanceof SharedBeat) {
             $key = $event->instance.($key === null ? '' : ":{$key}");
         }

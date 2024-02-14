@@ -45,7 +45,7 @@ class CheckCommand extends Command
         $lastRestart = $cache->store()->get('laravel:pulse:restart');
 
         $lock = ($store = $cache->store()->getStore()) instanceof LockProvider
-            ? $store->lock('laravel:pulse:check', 5)
+            ? $store->lock('laravel:pulse:check', 1)
             : null;
 
         $instance = Str::random();
@@ -57,7 +57,7 @@ class CheckCommand extends Command
 
             $now = CarbonImmutable::now();
 
-            if ($lock?->isOwnedByCurrentProcess() || $lock?->get()) {
+            if ($lock?->get()) {
                 $event->dispatch(new IsolatedBeat($now));
             }
 

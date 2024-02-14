@@ -6,6 +6,7 @@ use Carbon\CarbonInterval as Interval;
 use Illuminate\Config\Repository;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
+use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
 use Laravel\Pulse\Support\CacheStoreResolver;
