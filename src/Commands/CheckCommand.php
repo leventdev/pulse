@@ -48,7 +48,7 @@ class CheckCommand extends Command
             ? $store->lock('laravel:pulse:check', 5)
             : null;
 
-        $key = Str::random();
+        $instance = Str::random();
 
         while (true) {
             $now = CarbonImmutable::now();
@@ -61,7 +61,7 @@ class CheckCommand extends Command
                 $event->dispatch(new IsolatedBeat($now));
             }
 
-            $event->dispatch(new SharedBeat($now, $key));
+            $event->dispatch(new SharedBeat($now, $instance));
 
             $pulse->ingest();
 

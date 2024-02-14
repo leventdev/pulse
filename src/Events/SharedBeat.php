@@ -11,7 +11,7 @@ class SharedBeat
      */
     public function __construct(
         public CarbonImmutable $time,
-        public string $key,
+        public string $instance,
     ) {
         //
     }

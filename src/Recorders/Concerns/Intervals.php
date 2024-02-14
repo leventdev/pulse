@@ -15,7 +15,7 @@ trait Intervals
     protected function throttle(DateInterval|int $interval, SharedBeat|IsolatedBeat $event, callable $callback, ?string $key = null): void
     {
         if ($event instanceof SharedBeat) {
-            $key = $event->key.($key === null ? '' : ":{$key}");
+            $key = $event->instance.($key === null ? '' : ":{$key}");
         }
 
         RateLimiter::attempt($key, 1, fn () => $callback($event), $this->secondsUntil($interval));
