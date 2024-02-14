@@ -51,13 +51,13 @@ class CheckCommand extends Command
         $instance = Str::random();
 
         while (true) {
-            $now = CarbonImmutable::now();
-
             if ($lastRestart !== $cache->store()->get('laravel:pulse:restart')) {
                 return self::SUCCESS;
             }
 
-            if ($lock?->get()) {
+            $now = CarbonImmutable::now();
+
+            if ($lock?->isOwnedByCurrentProcess() || $lock?->get()) {
                 $event->dispatch(new IsolatedBeat($now));
             }
 

@@ -8,6 +8,7 @@ use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Str;
 use Laravel\Pulse\Events\SharedBeat;
 use Laravel\Pulse\Pulse;
+use Laravel\Pulse\Recorders\Concerns\Throttling;
 use Laravel\Pulse\Support\CacheStoreResolver;
 use RuntimeException;
 
@@ -16,7 +17,7 @@ use RuntimeException;
  */
 class Servers
 {
-    use Concerns\Intervals, InteractsWithTime;
+    use Concerns\Throttling, InteractsWithTime;
 
     /**
      * The events to listen for.
@@ -42,7 +43,6 @@ class Servers
     public function record(SharedBeat $event): void
     {
         $this->throttle(Interval::seconds(15), $event, function ($event) {
-            echo 'checking'.PHP_EOL.now()->toDateTimeString().PHP_EOL;
             $server = $this->config->get('pulse.recorders.'.self::class.'.server_name');
             $slug = Str::slug($server);
 

@@ -2,12 +2,15 @@
 
 namespace Laravel\Pulse\Recorders\Concerns;
 
+use Carbon\CarbonImmutable;
 use DateInterval;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Pulse\Events\IsolatedBeat;
 use Laravel\Pulse\Events\SharedBeat;
+use Laravel\Pulse\Support\CacheStoreResolver;
 
-trait Intervals
+trait Throttling
 {
     /**
      * Determine if the recorder is ready to record another snapshot.
@@ -18,6 +21,16 @@ trait Intervals
             $key = $event->instance.($key === null ? '' : ":{$key}");
         }
 
-        RateLimiter::attempt($key, 1, fn () => $callback($event), $this->secondsUntil($interval));
+        $cache = App::make(CacheStoreResolver::class);
+
+        $lastRunAt = $cache->store()->get($key);
+
+        if ($lastRunAt !== null && CarbonImmutable::createFromTimestamp($lastRunAt)->addSeconds($this->secondsUntil($interval))->isFuture()) {
+            return;
+        }
+
+        $callback($event);
+
+        $cache->store()->put($key, $event->time->getTimestamp(), $interval);
     }
 }
